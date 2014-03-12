@@ -53,11 +53,11 @@ options.register (
 
 #needs to be disabled for crab to work, otherwise get configuration errors
 #validate using edmConfigHash
-#options.parseArguments()
+options.parseArguments()
 
 
 
-process = cms.Process("TTHBB")
+process = cms.Process("TTH")
 process.load("Configuration.Geometry.GeometryIdeal_cff")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 process.load("Configuration.StandardSequences.MagneticField_cff")
@@ -571,6 +571,7 @@ process.gen = cms.Sequence(  process.genParticlesForJets* process.caVHGenJets * 
 
 process.out.outputCommands = cms.untracked.vstring([
     "drop *",
+#    "keep *",
 
     "keep edmMergeableCounter_*_*_*", # Keep the lumi-block counter information
     "keep edmTriggerResults_TriggerResults__*", #Keep the trigger results
@@ -594,9 +595,9 @@ process.out.outputCommands = cms.untracked.vstring([
     "keep *_muons__*", #reco muons
     "keep patMuons_*__*",
 
-    # Muons
-    "keep *_taus__*", #reco muons
+    # Taus
     "keep patTaus_*__*",
+    "keep recoPFTauDiscriminator_*__*",
 
     # Electrons
     "keep patElectrons_*__*",
