@@ -50,12 +50,9 @@ options.register (
     "Global tag"
 )
 
-
 #needs to be disabled for crab to work, otherwise get configuration errors
 #validate using edmConfigHash
-options.parseArguments()
-
-
+#options.parseArguments()
 
 process = cms.Process("TTH")
 process.load("Configuration.Geometry.GeometryIdeal_cff")
