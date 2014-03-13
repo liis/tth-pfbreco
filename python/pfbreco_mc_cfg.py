@@ -16,6 +16,7 @@ from UserCode.TTHPAT.eventCounting import *
 from PhysicsTools.PatAlgos.selectionLayer1.jetSelector_cfi import *
 
 from FWCore.ParameterSet.VarParsing import VarParsing
+import sys
 
 options = VarParsing("analysis")
 options.register ("isMC", True,
@@ -52,7 +53,8 @@ options.register (
 
 #needs to be disabled for crab to work, otherwise get configuration errors
 #validate using edmConfigHash
-#options.parseArguments()
+if hasattr(sys, "argv"):
+    options.parseArguments()
 
 process = cms.Process("TTH")
 process.load("Configuration.Geometry.GeometryIdeal_cff")
@@ -63,11 +65,7 @@ process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 
 process.source = cms.Source(
     "PoolSource",
-    fileNames = cms.untracked.vstring(
-        [
-            "/store/mc/Summer12_DR53X/TTH_HToBB_M-125_8TeV-pythia6/AODSIM/PU_S10_START53_V7A-v1/0000/00FA9388-81FC-E111-A80D-00215E2217BE.root"
-        ]
-    ),
+    fileNames = cms.untracked.vstring(options.inputFiles),
 )
 
 process.out = cms.OutputModule(
@@ -573,7 +571,7 @@ process.out.outputCommands = cms.untracked.vstring([
     "keep edmMergeableCounter_*_*_*", # Keep the lumi-block counter information
     "keep edmTriggerResults_TriggerResults__*", #Keep the trigger results
 #    "keep *_genParticles__*", #keep all the genParticles
-    "keep _savedGenParticles__*",
+    "keep *_savedGenParticles__*",
     #"keep recoVertexs_offlinePrimaryVertices__*", #keep the offline PV-s
     "keep recoVertexs_goodOfflinePrimaryVertices__*", #keep the offline PV-s
 
@@ -651,7 +649,8 @@ process.out.outputCommands = cms.untracked.vstring([
     "keep patTriggerFilters_patTrigger_*_*",
     "keep patTriggerPaths_patTrigger_*_*",
     "keep *_patTriggerEvent_*_*",
-    "keep LHEEventProduct_*_*_LHE",
+    "keep LHEEventProduct_*__LHE",
+    "keep LHEEventProduct_*_*_LHE"
 ])
 
 process.out.SelectEvents = cms.untracked.PSet(
