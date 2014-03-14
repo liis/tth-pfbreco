@@ -17,6 +17,7 @@ from PhysicsTools.PatAlgos.selectionLayer1.jetSelector_cfi import *
 
 from FWCore.ParameterSet.VarParsing import VarParsing
 import sys
+print "sys.argv=",sys.argv
 
 options = VarParsing("analysis")
 options.register ("isMC", True,
@@ -53,7 +54,7 @@ options.register (
 
 #needs to be disabled for crab to work, otherwise get configuration errors
 #validate using edmConfigHash
-if hasattr(sys, "argv"):
+if hasattr(sys, "argv") and not "-cfg" in sys.argv:
     options.parseArguments()
 
 process = cms.Process("TTH")
