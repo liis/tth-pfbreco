@@ -64,6 +64,9 @@ process.load("Configuration.StandardSequences.MagneticField_cff")
 process.load("PhysicsTools.PatAlgos.patSequences_cff")
 process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 
+if len(options.inputFiles) == 0:
+    options.inputFiles = ["/store/mc/Summer12_DR53X/TTH_HToBB_M-125_8TeV-pythia6/AODSIM/PU_S10_START53_V7A-v1/0000/00FA9388-81FC-E111-A80D-00215E2217BE.root"]
+
 process.source = cms.Source(
     "PoolSource",
     fileNames = cms.untracked.vstring(options.inputFiles),
