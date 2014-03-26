@@ -231,7 +231,7 @@ process.electronSequence = cms.Sequence(
 )
 
 #---------------------------------------------
-# Taus
+# Taus https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuidePFTauID
 #---------------------------------------------
 process.load("RecoTauTag.Configuration.RecoPFTauTag_cff")
 process.tauSequence = cms.Sequence(
