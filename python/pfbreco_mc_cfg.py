@@ -509,7 +509,8 @@ runMEtUncertainties(process,
      electronCollection=cms.InputTag("selectedPatElectrons"),
      photonCollection=None,
      muonCollection=cms.InputTag("selectedPatMuons"),
-     tauCollection="selectedPatTaus", # "" means emtpy, None means cleanPatTaus
+     #FIXME: presently tau variations disabled, results in segfault
+     tauCollection="", # "" means emtpy, None means cleanPatTaus
      jetCollection=cms.InputTag("selectedPatJets"),
      jetCorrLabel="L3Absolute" if options.isMC else "L2L3Residual",
      doSmearJets=options.isMC, #Note: switch this to False for the sync!
