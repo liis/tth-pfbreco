@@ -70,6 +70,13 @@ if len(options.inputFiles) == 0:
 process.source = cms.Source(
     "PoolSource",
     fileNames = cms.untracked.vstring(options.inputFiles),
+
+    #required for taus: https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuidePFTauID#53X_recommendation_for_Run_I_ana
+    dropDescendantsOfDroppedBranches = cms.untracked.bool(False),
+    inputCommands = cms.untracked.vstring(
+        'keep *',
+        'drop recoPFTaus_*_*_*'
+    )
 )
 
 process.out = cms.OutputModule(
@@ -232,11 +239,12 @@ process.electronSequence = cms.Sequence(
 
 #---------------------------------------------
 # Taus https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuidePFTauID
+# Using the recipe Tau ID 2014 (preparation for Run II) -> 53X (recommendation for Run I analyses)
+# https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuidePFTauID#53X_recommendation_for_Run_I_ana
 #---------------------------------------------
 process.load("RecoTauTag.Configuration.RecoPFTauTag_cff")
-process.tauSequence = cms.Sequence(
-    process.recoTauClassicHPSSequence
-)
+#from PhysicsTools.PatAlgos.tools.tauTools import *
+#switchToPFTauHPS(process)
 
 #---------------------------------------------
 # Trigger matching
@@ -694,7 +702,6 @@ process.skimSequence += process.metUncertaintySequence
 process.skimSequence += process.patTriggerSequence
 process.skimSequence += process.muonSequence
 process.skimSequence += process.electronSequence
-process.skimSequence += process.tauSequence
 
 #https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideBTagJetProbabilityCalibration?redirectedfrom=CMS.SWGuideBTagJetProbabilityCalibration#Calibration_in_53x_Data_and_MC
 process.GlobalTag.toGet = cms.VPSet(
