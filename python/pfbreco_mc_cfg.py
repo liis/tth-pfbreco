@@ -743,5 +743,27 @@ process.GlobalTag.toGet = cms.VPSet(
 )
 
 process.skimPath = cms.Path(process.skimSequence)
-process.vhbbPath = cms.Path(process.HbbAnalyzerNew)
+#FIXME: need to correctly add all the VHBB jet business
+# ----- Begin Fatal Exception 12-May-2014 18:54:56 EEST-----------------------
+# An exception of category 'ProductNotFound' occurred while
+#    [0] Processing run: 1 lumi: 2086 event: 673456
+#    [1] Running path 'vhbbPath'
+#    [2] Calling event method for module PATJetProducer/'patJetsCAVHFatPF'
+# Exception Message:
+# Principal::getByLabel: Found zero products matching all criteria
+# Looking for type: edm::ValueMap<pat::JetCorrFactors>
+# Looking for module label: patJetCorrFactorsCAVHFatPF
+# Looking for productInstanceName:
+
+
+process.vhbbPath = cms.Path(
+    process.kt6PFJets *
+    process.kt6PFJets25 *
+    process.ak5PFJets *
+    process.ak7PFJets *
+    process.kt6PFJetsForIsolation *
+    process.patJetsCAVHFatPF *
+    process.selectedPatJetsCAVHFatPF *
+    process.HbbAnalyzerNew
+)
 process.outPath = cms.EndPath(process.out)
