@@ -518,6 +518,34 @@ runMEtUncertainties(process,
      addToPatDefaultSequence=False
 )
 
+#VHbb legacy stuff
+#copied from https://github.com/jpata/vhbb/blob/master/HbbAnalyzer/test/patTuple_PF2PAT_Event_Candidates_MC_new.py#L636
+process.HbbAnalyzerNew = cms.EDProducer("HbbAnalyzerNew",
+    runOnMC = cms.bool(options.isMC),
+    hltResultsTag = cms.InputTag("TriggerResults::HLT"),
+    lep_ptCutForBjets = cms.double(5),
+    electronNoCutsTag = cms.InputTag("gsfElectrons"),
+#    electronTag = cms.InputTag("selectedElectronsMatched"),
+    electronTag = cms.InputTag("selectedPatElectrons"),
+    tauTag = cms.InputTag("patTaus"),
+
+    muonNoCutsTag = cms.InputTag("muons"),
+   muonTag = cms.InputTag("selectedPatMuons"),
+#    muonTag = cms.InputTag("selectedMuonsMatched"),
+    jetTag = cms.InputTag("selectedPatJetsCAVHFatPF"),
+    subjetTag = cms.InputTag("selectedPatJetsCAVHSubPF"),
+    filterjetTag = cms.InputTag("selectedPatJetsCAVHFilterPF"),
+    simplejet2Tag = cms.InputTag("cleanPatJets"),
+    simplejet3Tag = cms.InputTag("selectedPatJetsAK7PF"),
+    photonTag = cms.InputTag("selectedPatPhotons"),
+    metTag = cms.InputTag("met"), #this input tag is used to fill calo MET
+    verbose = cms.untracked.bool(False),
+
+    #TODO: clean up the analyzer
+    simplejet1Tag = cms.InputTag("UNUSED_WAS_selectedPatJets"),
+    simplejet4Tag = cms.InputTag("UNUSED_WAS_selectedPatJetsAK7Calo"),
+)
+
 process.patPFMetNoPU = process.patMETs.clone(
     metSource = cms.InputTag("pfMETNoPU"),
     addMuonCorrections = cms.bool(False),
@@ -715,4 +743,5 @@ process.GlobalTag.toGet = cms.VPSet(
 )
 
 process.skimPath = cms.Path(process.skimSequence)
+process.vhbbPath = cms.Path(process.HbbAnalyzerNew)
 process.outPath = cms.EndPath(process.out)
