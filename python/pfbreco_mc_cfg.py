@@ -114,6 +114,7 @@ usePF2PAT(process, runPF2PAT=True, jetAlgo="AK5", runOnMC=options.isMC, postfix=
     #typeIMetCorrections = True
     typeIMetCorrections = False #Type1 MET now applied later using runMETUncertainties
 )
+#usePFIso( process )
 
 # https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections#JetEnCorPFnoPU2012
 process.pfPileUp.Enable = True
@@ -188,13 +189,47 @@ process.muonSequence += (
 #    it"s already gsfElectrons, which is a superset of the pfElectrons
 
 #From EgammaAnalysis/ElectronTools/test/patTuple_electronId_cfg.py
+#import VHbbAnalysis.HbbAnalyzer.simpleCutBasedElectronIDSpring10_cfi as vbtfid
+
+#process.eidVBTFRel95 = vbtfid.simpleCutBasedElectronID.clone( electronQuality = '95relIso' )
+#process.eidVBTFRel85 = vbtfid.simpleCutBasedElectronID.clone( electronQuality = '85relIso' )
+#process.eidVBTFRel80 = vbtfid.simpleCutBasedElectronID.clone( electronQuality = '80relIso' )
+#process.eidVBTFRel70 = vbtfid.simpleCutBasedElectronID.clone( electronQuality = '70relIso' )
+#process.eidVBTFCom95 = vbtfid.simpleCutBasedElectronID.clone( electronQuality = '95cIso'   )
+#process.eidVBTFCom85 = vbtfid.simpleCutBasedElectronID.clone( electronQuality = '85cIso'   )
+#process.eidVBTFCom80 = vbtfid.simpleCutBasedElectronID.clone( electronQuality = '80cIso'   )
+#process.eidVBTFCom70 = vbtfid.simpleCutBasedElectronID.clone( electronQuality = '70cIso'   )
+
+#process.eidSequence = cms.Sequence(
+#    process.eidVBTFRel95 +
+#    process.eidVBTFRel85 +
+#    process.eidVBTFRel80 +
+#    process.eidVBTFRel70 +
+#    process.eidVBTFCom95 +
+#    process.eidVBTFCom85 +
+#    process.eidVBTFCom80 +
+#    process.eidVBTFCom70
+#    )       
+
+
 process.load("EgammaAnalysis.ElectronTools.electronIdMVAProducer_cfi")
 process.mvaID = cms.Sequence(  process.mvaTrigV0 + process.mvaTrigNoIPV0 + process.mvaNonTrigV0 )
 process.patElectrons.electronIDSources = cms.PSet(
   mvaTrigV0 = cms.InputTag("mvaTrigV0"),
   mvaNonTrigV0 = cms.InputTag("mvaNonTrigV0"),
   mvaTrigNoIPV0 = cms.InputTag("mvaTrigNoIPV0"),
+
+  #old ones
+#  eidVBTFRel95 = cms.InputTag("eidVBTFRel95"),
+#  eidVBTFRel85 = cms.InputTag("eidVBTFRel85"),
+#  eidVBTFRel80 = cms.InputTag("eidVBTFRel80"),
+#  eidVBTFRel70 = cms.InputTag("eidVBTFRel70"),
+#  eidVBTFCom95 = cms.InputTag("eidVBTFCom95"),
+#  eidVBTFCom85 = cms.InputTag("eidVBTFCom85"),
+#  eidVBTFCom80 = cms.InputTag("eidVBTFCom80"),
+#  eidVBTFCom70 = cms.InputTag("eidVBTFCom70")
 )
+
 process.patPF2PATSequence.replace(process.patElectrons, process.mvaID * process.patElectrons)
 process.selectedPatElectrons.cut = "pt>20 && abs(eta)<3.0"
 process.pfIsolatedElectrons.isolationCut = 0.2
@@ -270,8 +305,8 @@ process.patTriggerSequence = cms.Sequence(
 process.selectedPatJets.cut = cms.string("pt>30 && abs(eta)<5.0")
 
 #enabled by git submodule add https://github.com/latinos/UserCode-CMG-CMGTools-External CMSSW/src/CMGTools/External
-process.load("CMGTools.External.pujetidsequence_cff")
-process.patPF2PATSequence += process.puJetIdSqeuence
+#process.load("CMGTools.External.pujetidsequence_cff")
+#process.patPF2PATSequence += process.puJetIdSqeuence
 
 #from https://github.com/vhbb/vhbb/blob/master/HbbAnalyzer/test/patMC.py
 from PhysicsTools.PatAlgos.tools.metTools import *
@@ -491,6 +526,42 @@ process.load ("RecoBTag.PerformanceDB.BTagPerformanceDB1107")
 #process.selectedPatJets.checkOverlaps.muons.requireNoOverlaps = cms.bool(True)
 #process.selectedPatJets.checkOverlaps.electrons.requireNoOverlaps = cms.bool(True)
 
+
+process.cleanPatJets.src = "selectedPatJets"
+process.cleanPatJets.checkOverlaps.muons.requireNoOverlaps = cms.bool(True)
+process.cleanPatJets.checkOverlaps.electrons.requireNoOverlaps = cms.bool(True)
+
+
+process.cleanPatJets.checkOverlaps.photons.src = "selectedPatPhotons"
+process.cleanPatJets.checkOverlaps.taus.src = "selectedPatTaus"
+
+#process.cleanPatJets.checkOverlaps.muons.src = "selectedPatMuons"
+process.cleanPatJets.checkOverlaps.muons.preselection = ("pt > 20 && isGlobalMuon && globalTrack().normalizedChi2 < 10 && isPFMuon && "
+                                                         "innerTrack().hitPattern().trackerLayersWithMeasurement > 5 && "
+                                                         "innerTrack().hitPattern().numberOfValidPixelHits > 0 && "
+                                                         "globalTrack().hitPattern().numberOfValidMuonHits > 0 && "
+                                                         "numberOfMatchedStations > 1 && "
+                                                         "dB < 0.2 && abs(eta) < 2.4 "
+                                                         
+                                                         "&& ( chargedHadronIso + neutralHadronIso + photonIso ) < 0.10 * pt  "
+                                                         )
+
+#process.cleanPatJets.checkOverlaps.electrons.src = "selectedPatElectrons"
+process.cleanPatJets.checkOverlaps.electrons.preselection =  (  "pt > 15.0 && abs(eta) < 2.5 &&"
+                                                                "(isEE || isEB) && !isEBEEGap &&"
+                                                                " (chargedHadronIso + neutralHadronIso + photonIso)/pt <0.10 &&"
+                                                                "dB < 0.02 && "  #dB is computed wrt PV but is transverse only, no info about dZ(vertex)
+                                                                "( "
+                                                                "(isEE && ("
+                                                                "abs(deltaEtaSuperClusterTrackAtVtx) < 0.005 &&  abs(deltaPhiSuperClusterTrackAtVtx) < 0.02 && sigmaIetaIeta < 0.03 && hadronicOverEm < 0.10 &&  abs(1./ecalEnergy*(1.-eSuperClusterOverP)) < 0.05 "
+                                                                ")) || "
+                                                                "(isEB && (  "
+                                                                "abs(deltaEtaSuperClusterTrackAtVtx) < 0.004 &&  abs(deltaPhiSuperClusterTrackAtVtx) < 0.03 && sigmaIetaIeta < 0.01 && hadronicOverEm < 0.12 && abs(1./ecalEnergy*(1.-eSuperClusterOverP)) < 0.05"
+                                                                "))"
+                                                                #or use mvaNonTrigV0 and mvaTrigV0
+                                                                ")"
+                                                                )
+
 #-------------------------------------------------
 # MET uncertainty step
 #-------------------------------------------------
@@ -510,7 +581,7 @@ runMEtUncertainties(process,
      photonCollection=None,
      muonCollection=cms.InputTag("selectedPatMuons"),
      #FIXME: presently tau variations disabled, results in segfault
-     tauCollection="", # "" means emtpy, None means cleanPatTaus
+     tauCollection="selectedPatTaus", # "" means emtpy, None means cleanPatTaus
      jetCollection=cms.InputTag("selectedPatJets"),
      jetCorrLabel="L3Absolute" if options.isMC else "L2L3Residual",
      doSmearJets=options.isMC, #Note: switch this to False for the sync!
@@ -538,13 +609,20 @@ process.HbbAnalyzerNew = cms.EDProducer("HbbAnalyzerNew",
     simplejet2Tag = cms.InputTag("cleanPatJets"),
     simplejet3Tag = cms.InputTag("selectedPatJetsAK7PF"),
     photonTag = cms.InputTag("selectedPatPhotons"),
-    metTag = cms.InputTag("met"), #this input tag is used to fill calo MET
+    metTag = cms.InputTag("pfMet"), #this input tag is used to fill calo MET
     verbose = cms.untracked.bool(False),
 
     #TODO: clean up the analyzer
     simplejet1Tag = cms.InputTag("UNUSED_WAS_selectedPatJets"),
     simplejet4Tag = cms.InputTag("UNUSED_WAS_selectedPatJetsAK7Calo"),
 )
+
+## Special METs
+#process.patMETsHT = cms.EDProducer("MHTProducer",
+#                                   JetCollection = cms.InputTag("patJets"),
+#                                   MinJetPt      = cms.double(30),
+#                                   MaxJetEta     = cms.double(5)
+#                                   )
 
 process.patPFMetNoPU = process.patMETs.clone(
     metSource = cms.InputTag("pfMETNoPU"),
@@ -569,13 +647,8 @@ process.pfMETNoPUCharge.calculateSignificance = cms.bool(False)
 
 # load the PU JetID sequence
 process.load("CMGTools.External.pujetidsequence_cff")
-process.puJetId.jets =  cms.InputTag("selectedPatJets")
-process.puJetMva.jets =  cms.InputTag("selectedPatJets")
-
-# load the PU JetID sequence
-process.load("CMGTools.External.pujetidsequence_cff")
-process.puJetId.jets =  cms.InputTag("selectedPatJets")
-process.puJetMva.jets =  cms.InputTag("selectedPatJets")
+process.puJetId.jets =  cms.InputTag("cleanPatJets")
+process.puJetMva.jets =  cms.InputTag("cleanPatJets")
 
 process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
 process.savedGenParticles = cms.EDProducer(
@@ -742,7 +815,7 @@ process.GlobalTag.toGet = cms.VPSet(
     connect = cms.untracked.string("frontier://FrontierPrep/CMS_COND_BTAU"))
 )
 
-process.skimPath = cms.Path(process.skimSequence)
+#process.skimPath = cms.Path(process.skimSequence)
 #FIXME: need to correctly add all the VHBB jet business
 # ----- Begin Fatal Exception 12-May-2014 18:54:56 EEST-----------------------
 # An exception of category 'ProductNotFound' occurred while
@@ -755,15 +828,73 @@ process.skimPath = cms.Path(process.skimSequence)
 # Looking for module label: patJetCorrFactorsCAVHFatPF
 # Looking for productInstanceName:
 
+process.load("PhysicsTools.PatAlgos.producersLayer1.photonProducer_cff")
+process.patPF2PATSequence.replace(process.selectedPatJets, process.selectedPatJets + process.cleanPatMuons + process.cleanPatElectrons + process.makePatPhotons + process.selectedPatPhotons + process.cleanPatPhotons + process.cleanPatTaus + process.cleanPatJets) 
+#process.patPF2PATSequence.replace(process.patElectronsAll, process.eidSequence + process.patElectronsAll)
 
-process.vhbbPath = cms.Path(
-    process.kt6PFJets *
-    process.kt6PFJets25 *
-    process.ak5PFJets *
-    process.ak7PFJets *
-    process.kt6PFJetsForIsolation *
-    process.patJetsCAVHFatPF *
-    process.selectedPatJetsCAVHFatPF *
-    process.HbbAnalyzerNew
-)
+process.printEventContent = cms.EDAnalyzer("EventContentAnalyzer")
+
+process.vhbbPath = cms.Sequence(
+#        process.goodOfflinePrimaryVertices *
+#            process.softElectronCands*
+#            process.inclusiveVertexing*
+#            process.eidSequence*
+#            process.patPF2PATSequencePFlow *
+            process.pfMETNoPU*
+            process.pfNoPileUpCharge*
+            process.pfMETNoPUCharge*
+            process.kt6PFJetsCentralNeutral *
+            process.kt6PFJetsForIsolation *
+            process.kt6PFJets25*
+            process.ak7PFJets*
+            process.caVHPFJets*
+            process.ca12PFJetsPFlow*
+            process.ca12PFJetsPrunedPFlow*
+            process.ca12PFJetsFilteredPFlow*
+            process.ca12PFJetsMassDropFilteredPFlow*
+            process.mvaID *
+            process.patDefaultSequence*
+            process.metUncertaintySequence*
+
+#            process.patMETsHT*
+            process.patPFMetNoPU *
+        #                    process.patType1CorrectedPFMetNoPU *
+        #                    process.patType1p2CorrectedPFMetNoPU *
+        #                    process.leptonTrigMatch*
+  #          process.selectedVertices*
+#            process.bcandidates* ## should we include?
+            process.producePatPFMETCorrections* 
+
+#            process.cleanPatMuons*
+#            process.cleanPatElectrons*
+#            process.makePatPhotons*
+#            process.patPhotons*
+#            process.selectedPatPhotons*
+#            process.cleanPatPhotons*
+#            process.cleanPatTaus*
+#            process.cleanPatJets
+            
+
+            process.puJetIdSqeuence *   ### it is not a typo ;-)
+
+            process.HbbAnalyzerNew *
+            process.printEventContent
+        )
+
+process.p = cms.Path(
+    process.skimSequence*
+    process.vhbbPath
+    )
+
+#process.vhbbPath = cms.Path(
+#    process.kt6PFJets *
+#    process.kt6PFJets25 *
+##    process.ak5PFJets *
+#    process.ak7PFJets *
+#    process.kt6PFJetsForIsolation *
+#    process.caVHPFJets*
+#    process.selectedPatJetsCAVHFatPF #*
+##    process.HbbAnalyzerNew
+#)
+
 process.outPath = cms.EndPath(process.out)
